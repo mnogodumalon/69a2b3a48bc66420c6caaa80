@@ -73,11 +73,17 @@ export default function DashboardOverview() {
     ? klientenstammdaten.find(k => k.record_id === selectedKlientId) ?? null
     : null;
 
+  // Safe extractRecordId that handles non-string values
+  const safeExtractId = (val: unknown): string | null => {
+    if (!val || typeof val !== 'string') return null;
+    return extractRecordId(val);
+  };
+
   // Per-client filtered data
   const klientVitals = useMemo(
     () => selectedKlientId
       ? enrichedVitalwerteErfassung
-          .filter(v => extractRecordId(v.fields.klient) === selectedKlientId)
+          .filter(v => safeExtractId(v.fields.klient) === selectedKlientId)
           .sort((a, b) => (b.fields.messzeitpunkt ?? '').localeCompare(a.fields.messzeitpunkt ?? ''))
           .slice(0, 5)
       : [],
@@ -86,14 +92,14 @@ export default function DashboardOverview() {
 
   const klientMeds = useMemo(
     () => selectedKlientId
-      ? enrichedMedikamentenplan.filter(m => extractRecordId(m.fields.klient) === selectedKlientId)
+      ? enrichedMedikamentenplan.filter(m => safeExtractId(m.fields.klient) === selectedKlientId)
       : [],
     [enrichedMedikamentenplan, selectedKlientId]
   );
 
   const klientWunden = useMemo(
     () => selectedKlientId
-      ? enrichedWunddokumentation.filter(w => extractRecordId(w.fields.klient) === selectedKlientId)
+      ? enrichedWunddokumentation.filter(w => safeExtractId(w.fields.klient) === selectedKlientId)
       : [],
     [enrichedWunddokumentation, selectedKlientId]
   );
@@ -101,7 +107,7 @@ export default function DashboardOverview() {
   const klientVisits = useMemo(
     () => selectedKlientId
       ? enrichedPflegedurchfuehrung
-          .filter(p => extractRecordId(p.fields.klient) === selectedKlientId)
+          .filter(p => safeExtractId(p.fields.klient) === selectedKlientId)
           .sort((a, b) => (b.fields.besuchsdatum ?? '').localeCompare(a.fields.besuchsdatum ?? ''))
           .slice(0, 5)
       : [],
